@@ -1,0 +1,135 @@
+﻿<UserControl x:Class="PasswordManager.TreeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PasswordManager"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <TreeView x:Name="mainTree"
+              ItemsSource="{Binding}"
+              >
+        <TreeView.Background>
+            <LinearGradientBrush EndPoint="0.504,1.5" StartPoint="0.504,0.03">
+                <GradientStop Color="CadetBlue"  Offset="0"/>
+                <GradientStop Color="#FFFFFFFF" Offset="0.567"/>
+            </LinearGradientBrush>
+        </TreeView.Background>
+        <TreeView.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Add Directory"
+                          Click="AddDirectory"
+                          CommandParameter="{Binding}"/>
+                <Separator/>
+                <MenuItem Header="Files">
+                    <MenuItem Header="Passwords"
+                          Click="AddPasswords"
+                          CommandParameter="{Binding}"/>
+                    <MenuItem Header="Image"
+                            Click="AddImage"
+                            CommandParameter="{Binding}"/>
+                </MenuItem>
+            </ContextMenu>
+        </TreeView.ContextMenu>
+        <TreeView.Resources>
+            <Style TargetType="{x:Type Image}"
+               x:Key="treeImage">
+                <Setter Property="Margin" Value="0 0 10 0"/>
+                <Setter Property="Height" Value="16"/>
+                <Setter Property="Width" Value="16"/>
+            </Style>
+
+
+            <ContextMenu x:Key="folderContextMenu">
+                <MenuItem Header="{Binding Name}" 
+                          IsEnabled="False"/>
+
+                <Separator/>
+                <MenuItem Header="Add Directory"
+                          Click="AddDirectory"
+                          CommandParameter="{Binding}"/>
+
+                <MenuItem Header="Add File">
+                    <MenuItem Header="Passwords"
+                          Click="AddPasswords"
+                          CommandParameter="{Binding}"/>
+                    <MenuItem Header="Image"
+                            Click="AddImage"
+                            CommandParameter="{Binding}"/>
+                </MenuItem>
+
+                <Separator/>
+                <MenuItem Header="Rename"
+                              Click="RenameNode"
+                              CommandParameter="{Binding}"/>
+                <MenuItem Header="Delete"
+                              Click="DeleteNode"
+                              CommandParameter="{Binding}"/>
+            </ContextMenu>
+
+            <ContextMenu x:Key="fileContextMenu">
+                <MenuItem Header="{Binding Name}"
+                          IsEnabled="False"/>
+                <Separator/>
+                <MenuItem Header="Rename"
+                              Click="RenameNode"
+                              CommandParameter="{Binding}"/>
+                <MenuItem Header="Delete"
+                              Click="DeleteNode"
+                              CommandParameter="{Binding}"/>
+            </ContextMenu>
+
+            <local:ContextMenuConverter x:Key="contextMenuConverter"
+                                    FolderMenu="{StaticResource folderContextMenu}"
+                                    FileMenu="{StaticResource fileContextMenu}"/>
+            <local:NegationBoolConverter x:Key="negationBoolConverter"/>
+            <local:BorderThicknessConverter x:Key="borderThicknessConverter"/>
+            <local:FontWeightConverter x:Key="fontWeightConverter"/>
+            <local:FontStyleConverter x:Key="fontStyleConverter"/>
+            <HierarchicalDataTemplate
+                DataType="{x:Type local:Folder}" 
+                ItemsSource="{Binding Items}"
+                >
+                <StackPanel Orientation="Horizontal" >
+                    <Image Source="/images/folder.png"
+                           Style="{StaticResource treeImage}"/>
+                    <TextBox Text="{Binding Name}"
+                             IsReadOnly="{Binding IsEditable, Converter={StaticResource negationBoolConverter}}"
+                             LostFocus="finishRenaming"
+                             BorderThickness="{Binding IsEditable, Converter={StaticResource borderThicknessConverter}}"
+                             FontWeight="{Binding IsEditable, Converter={StaticResource fontWeightConverter}}"
+                             FontStyle="{Binding IsEditable, Converter={StaticResource fontStyleConverter}}"
+                             Cursor="Arrow"
+                             KeyDown="onRenamingKeyDown"
+                             local:TextBoxExtension.NodeBinding="{Binding }"
+                             Background="Transparent"/>
+                </StackPanel>
+            </HierarchicalDataTemplate>
+
+            <DataTemplate
+                DataType="{x:Type local:File}">
+                <StackPanel Orientation="Horizontal" >
+                    <Image Source="/images/file.png"
+                           Style="{StaticResource treeImage}"/>
+                    <TextBox Text="{Binding Name}"
+                             IsReadOnly="{Binding IsEditable, Converter={StaticResource negationBoolConverter}}"
+                             LostFocus="finishRenaming"
+                             DragEnter="finishRenaming"
+                             BorderThickness="{Binding IsEditable, Converter={StaticResource borderThicknessConverter}}"
+                             Cursor="Arrow"
+                             KeyDown="onRenamingKeyDown"
+                             local:TextBoxExtension.NodeBinding="{Binding }"
+                             Background="Transparent"/>
+                </StackPanel>
+            </DataTemplate>
+            <Style TargetType="{x:Type TreeViewItem}">
+                <Setter Property="ContextMenu" 
+                    Value="{Binding Converter= {StaticResource contextMenuConverter}}"/>
+            </Style>
+            <Style TargetType="{x:Type TextBox}">
+                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="selectNode"/>
+            </Style>
+        </TreeView.Resources>
+    </TreeView>
+</UserControl>
